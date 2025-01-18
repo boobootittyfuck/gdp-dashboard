@@ -1,51 +1,32 @@
-# Import required libraries
 import streamlit as st
-from PIL import Image
-import pytesseract
 import re
-from collections import Counter
 
-# Set the title of the app
+# Title of the app
 st.title("Treasure Hunting Program")
 
 # Input section
-st.header("Input Your Text, Clue, or Image")
-
-# Add a file uploader for images
-uploaded_file = st.file_uploader("Upload an image of a clue (optional)", type=["png", "jpg", "jpeg"])
-
-# Add a text area for inputting text
+st.header("Input Your Text or Clue")
 text_input = st.text_area("Paste your text or chapter here:")
 
-# Button to analyze
 if st.button("Analyze"):
-    st.subheader("Analysis Results")
+    if text_input:
+        # Simple text analysis
+        st.subheader("Analysis Results")
 
-    # If an image is uploaded, extract text from the image
-    if uploaded_file:
-        image = Image.open(uploaded_file)
-        extracted_text = pytesseract.image_to_string(image)
-        st.write("Extracted Text from Image:")
-        st.write(extracted_text)
-        text_input += " " + extracted_text  # Combine image text with user text
-
-    # Analyze text input (if any)
-    if text_input.strip():
-        # Extract recurring words
-        words = re.findall(r'\b\w+\b', text_input.lower())
-        word_counts = Counter(words)
-        sorted_word_counts = word_counts.most_common(10)
-
+        # Recurring words
+        words = text_input.split()
+        word_count = {word: words.count(word) for word in set(words)}
+        sorted_word_count = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
         st.write("Most Recurring Words:")
-        st.write(sorted_word_counts)
+        st.write(sorted_word_count[:5])
 
-        # Extract numbers
+        # Numbers in the text
         numbers = re.findall(r'\b\d+\b', text_input)
         st.write("Numbers Found in Text:")
         st.write(numbers)
 
-        # Highlight odd or out-of-place words
-        anomalies = [word for word, count in word_counts.items() if len(word) > 6 and count == 1]
+        # Odd or out-of-place details
+        anomalies = [word for word in words if len(word) > 10]
         st.write("Odd or Out-of-Place Words:")
         st.write(anomalies)
 
@@ -60,4 +41,4 @@ if st.button("Analyze"):
         st.write(capitalized_words)
 
     else:
-        st.warning("Please provide either an image or text to analyze!")
+        st.warning("Please provide some text to analyze!")

@@ -2,43 +2,62 @@ import streamlit as st
 import re
 
 # Title of the app
-st.title("Treasure Hunting Program")
+st.title("Advanced Treasure Hunting Assistant")
 
-# Input section
-st.header("Input Your Text or Clue")
-text_input = st.text_area("Paste your text or chapter here:")
+# Input Section
+st.header("Input Your Clues or Chapter Text")
+text_input = st.text_area("Paste your text or clues here:")
+if text_input:
+    st.write("---")
 
-if st.button("Analyze"):
-    if text_input:
-        # Simple text analysis
-        st.subheader("Analysis Results")
+    # 1. Skim Overview
+    st.subheader("Overview")
+    titles = re.findall(r'\b(?:CHAPTER|TITLE|SECTION)\s+.*', text_input, re.IGNORECASE)
+    st.write("Detected Titles or Sections:", titles)
 
-        # Recurring words
-        words = text_input.split()
-        word_count = {word: words.count(word) for word in set(words)}
-        sorted_word_count = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
-        st.write("Most Recurring Words:")
-        st.write(sorted_word_count[:5])
+    # 2. Extract Patterns and Themes
+    st.subheader("Patterns & Themes")
+    recurring_words = re.findall(r'\b\w+\b', text_input)
+    word_frequency = {word: recurring_words.count(word) for word in set(recurring_words)}
+    sorted_words = sorted(word_frequency.items(), key=lambda x: x[1], reverse=True)[:10]
+    st.write("Most Recurring Words:", sorted_words)
 
-        # Numbers in the text
-        numbers = re.findall(r'\b\d+\b', text_input)
-        st.write("Numbers Found in Text:")
-        st.write(numbers)
+    # 3. Analyze Numbers & Codes
+    st.subheader("Numbers & Codes")
+    numbers = re.findall(r'\b\d+\b', text_input)
+    alphanumeric_patterns = [chr(int(num)) for num in numbers if num.isdigit() and 65 <= int(num) <= 90]
+    st.write("Numbers Found:", numbers)
+    st.write("Potential Alphanumeric Decoding:", alphanumeric_patterns)
 
-        # Odd or out-of-place details
-        anomalies = [word for word in words if len(word) > 10]
-        st.write("Odd or Out-of-Place Words:")
-        st.write(anomalies)
+    # 4. Focus on Anomalies
+    st.subheader("Anomalies")
+    anomalies = [word for word in text_input.split() if len(word) > 10 or '-' in word]
+    st.write("Unusual Words or Phrases:", anomalies)
 
-        # Find potential dates
-        years = [number for number in numbers if 1000 <= int(number) <= 2100]
-        st.write("Potential Years Found:")
-        st.write(years)
-
-        # Analyze for capitalized words or phrases
-        capitalized_words = re.findall(r'\b[A-Z][a-z]*\b', text_input)
-        st.write("Capitalized Words or Phrases:")
-        st.write(capitalized_words)
-
+    # 5. Cross-Referencing Information
+    st.subheader("Cross-Referencing Information")
+    # Dummy example for simplicity:
+    if "California" in text_input and "moon" in text_input:
+        st.write("Connection Detected: 'California' and 'moon' appear in the same context.")
     else:
-        st.warning("Please provide some text to analyze!")
+        st.write("No direct references detected.")
+
+    # 6. Map Physical References
+    st.subheader("Physical References")
+    place_keywords = ["mountain", "river", "lake", "city", "island", "ocean", "valley", "forest", "desert", "bay", "region"]
+    geographic_references = [word for word in text_input.split() if any(kw in word.lower() for kw in place_keywords)]
+    st.write("Geographic References Detected:", geographic_references)
+
+    # 7. Hypothesis Testing (Optional)
+    st.subheader("Hypotheses")
+    st.write("Testing directional or time-related patterns...")
+    if "sunrise" in text_input:
+        st.write("Clue suggests time-related interpretation: Sunrise.")
+    elif "steps" in text_input:
+        st.write("Clue suggests movement: Look for steps or paths.")
+
+    # 8. Document Findings
+    st.write("---")
+    st.download_button("Export Findings", data=f"{text_input}", file_name="treasure_analysis.txt")
+else:
+    st.warning("Please input some text to analyze!")

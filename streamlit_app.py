@@ -1,63 +1,75 @@
+# treasure_hunt_app.py
+
 import streamlit as st
 import re
 
 # Title of the app
-st.title("Advanced Treasure Hunting Assistant")
+st.title("Advanced Treasure Hunting Program")
 
-# Input Section
-st.header("Input Your Clues or Chapter Text")
-text_input = st.text_area("Paste your text or clues here:")
-if text_input:
-    st.write("---")
+# Input section
+st.header("Input Your Text or Clue")
+text_input = st.text_area("Paste your text or chapter here:")
 
-    # 1. Skim Overview
-    st.subheader("Overview")
-    titles = re.findall(r'\b(?:CHAPTER|TITLE|SECTION)\s+.*', text_input, re.IGNORECASE)
-    st.write("Detected Titles or Sections:", titles)
+if st.button("Analyze"):
+    if text_input.strip():
+        st.subheader("Analysis Results")
 
-    # 2. Extract Patterns and Themes
-    st.subheader("Patterns & Themes")
-    recurring_words = re.findall(r'\b\w+\b', text_input)
-    word_frequency = {word: recurring_words.count(word) for word in set(recurring_words)}
-    sorted_words = sorted(word_frequency.items(), key=lambda x: x[1], reverse=True)[:10]
-    st.write("Most Recurring Words:", sorted_words)
+        # 1. Chapter Titles & Subtitles
+        chapter_titles = re.findall(r'(CHAPTER [A-Z]+|[A-Z][a-z]+ [A-Z][a-z]+)', text_input)
+        st.write("Extracted Chapter Titles & Subtitles:")
+        st.write(chapter_titles)
 
-    # 3. Analyze Numbers & Codes
-    st.subheader("Numbers & Codes")
-    numbers = re.findall(r'\b\d+\b', text_input)
-    alphanumeric_patterns = [chr(int(num)) for num in numbers if num.isdigit() and 65 <= int(num) <= 90]
-    st.write("Numbers Found:", numbers)
-    st.write("Potential Alphanumeric Decoding:", alphanumeric_patterns)
+        # 2. Recurring Words & Patterns
+        words = text_input.split()
+        word_count = {word: words.count(word) for word in set(words)}
+        sorted_word_count = sorted(word_count.items(), key=lambda x: x[1], reverse=True)
+        st.write("Most Recurring Words:")
+        st.write(sorted_word_count[:10])
 
-    # 4. Focus on Anomalies
-    st.subheader("Anomalies")
-    anomalies = [word for word in text_input.split() if len(word) > 10 or '-' in word]
-    st.write("Unusual Words or Phrases:", anomalies)
+        # 3. Numbers and Codes
+        numbers = re.findall(r'\b\d+\b', text_input)
+        st.write("Numbers Found in Text:")
+        st.write(numbers)
 
-    # 5. Cross-Referencing Information
-    st.subheader("Cross-Referencing Information")
-    # Dummy example for simplicity:
-    if "California" in text_input and "moon" in text_input:
-        st.write("Connection Detected: 'California' and 'moon' appear in the same context.")
+        # Alphanumeric Decoding
+        alphanumeric_decoding = [chr(96 + int(n)) for n in numbers if n.isdigit() and 1 <= int(n) <= 26]
+        st.write("Potential Alphanumeric Decoding:")
+        st.write(alphanumeric_decoding)
+
+        # 4. Focus on Anomalies
+        # Italicized or quoted text
+        anomalies = re.findall(r'"(.*?)"|‘(.*?)’|“(.*?)”', text_input)
+        anomalies_flat = [item for sublist in anomalies for item in sublist if item]
+        st.write("Unusual Words or Phrases:")
+        st.write(anomalies_flat)
+
+        # 5. Cross-Referencing Information
+        cross_references = []
+        for word in ['moon', 'California']:
+            if word in text_input:
+                cross_references.append(word)
+        st.write("Cross-Referencing Information:")
+        if cross_references:
+            st.write(f"Connection Detected: {' and '.join(cross_references)} appear in the same context.")
+        else:
+            st.write("No meaningful cross-references detected.")
+
+        # 6. Map Out Physical References
+        geographic_references = re.findall(r'(California|mountain|river|bay|ocean)', text_input, re.IGNORECASE)
+        st.write("Geographic References Detected:")
+        st.write(list(set(geographic_references)))
+
+        # 7. Hypotheses
+        st.write("Hypotheses:")
+        if "step" in text_input.lower():
+            st.write("Clue suggests movement: Look for steps or paths.")
+        if "moon" in text_input.lower():
+            st.write("Could the 'moon' reference relate to a lunar feature or shape?")
+        if "California" in text_input.lower():
+            st.write("Consider exploring locations in California.")
+
+        # 8. Export Findings
+        st.download_button("Export Findings", data=text_input, file_name="treasure_hunt_analysis.txt")
+
     else:
-        st.write("No direct references detected.")
-
-    # 6. Map Physical References
-    st.subheader("Physical References")
-    place_keywords = ["mountain", "river", "lake", "city", "island", "ocean", "valley", "forest", "desert", "bay", "region"]
-    geographic_references = [word for word in text_input.split() if any(kw in word.lower() for kw in place_keywords)]
-    st.write("Geographic References Detected:", geographic_references)
-
-    # 7. Hypothesis Testing (Optional)
-    st.subheader("Hypotheses")
-    st.write("Testing directional or time-related patterns...")
-    if "sunrise" in text_input:
-        st.write("Clue suggests time-related interpretation: Sunrise.")
-    elif "steps" in text_input:
-        st.write("Clue suggests movement: Look for steps or paths.")
-
-    # 8. Document Findings
-    st.write("---")
-    st.download_button("Export Findings", data=f"{text_input}", file_name="treasure_analysis.txt")
-else:
-    st.warning("Please input some text to analyze!")
+        st.warning("Please provide text to analyze!")
